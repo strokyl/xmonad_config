@@ -17,3 +17,5 @@ cabal.sandbox.config
 *.eventlog
 .stack-work/
 cabal.project.local
+xmonad.errors
+xmonad-x86_64-linux
