@@ -9,12 +9,16 @@ import qualified XMonad.StackSet as W
 import XMonad.Layout.LayoutModifier
 import XMonad.Hooks.ManageDocks
 import XMonad.Util.WorkspaceCompare
+import XMonad.Actions.CycleWS
 
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     [((modm, xK_r),               spawn "rofi -show run"),
      ((modm .|. shiftMask, xK_e), spawn "emacs"),
-     ((modm, xK_f),               spawn "firefox")]
+     ((modm, xK_f),               spawn "firefox"),
+     ((modm, xK_g),               moveTo Next EmptyWS),
+     ((modm .|. shiftMask, xK_Tab),             moveTo Prev HiddenWS),
+     ((modm, xK_Tab),             moveTo Next HiddenNonEmptyWS)]
 
     ++
     -- mod-{a,z,e} %! Switch to physical/Xinerama screens 1, 2, or 3
