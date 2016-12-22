@@ -11,6 +11,9 @@ import XMonad.Hooks.ManageDocks
 import XMonad.Util.WorkspaceCompare
 import XMonad.Actions.CycleWS
 
+import System.Taffybar.Hooks.PagerHints (pagerHints)
+import XMonad.Hooks.EwmhDesktops        (ewmh)
+
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     [((modm, xK_r),               spawn "rofi -show run"),
@@ -43,11 +46,12 @@ myXmobar :: LayoutClass l Window
        => XConfig l -> IO (XConfig (ModifiedLayout AvoidStruts l))
 myXmobar conf = statusBar "xmobar" myPP toggleStrutsKey conf
 
-main = xmonad =<< myXmobar desktopConfig
-    {
+myConfig = desktopConfig {
         terminal    = "urxvtc",
         logHook     = dynamicLogXinerama,
         modMask     = mod4Mask,
         keys = \c -> azertyKeys c `M.union` myKeys c `M.union` keys desktopConfig c,
         borderWidth = 3
     }
+
+main = xmonad $ ewmh $ pagerHints myConfig
