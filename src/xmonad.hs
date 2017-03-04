@@ -11,7 +11,7 @@ import XMonad.Hooks.ManageDocks
 import XMonad.Util.WorkspaceCompare
 import XMonad.Actions.CycleWS
 import XMonad.Actions.UpdatePointer
-import XMonad.Hooks.EwmhDesktops
+import XMonad.Hooks.EwmhDesktops (ewmh)
 import XMonad.Hooks.ICCCMFocus
 import XMonad.Hooks.SetWMName
 import XMonad.Util.Cursor
@@ -19,6 +19,8 @@ import Graphics.X11.ExtraTypes.XF86
 import XMonad.Prompt.ConfirmPrompt
 import System.Exit
 import XMonad.Prompt
+import XMonad.Layout.Fullscreen
+import XMonad.Layout.NoBorders
 
 
 setLum :: Show a => Num a => a -> X ()
@@ -88,7 +90,8 @@ myConfig = desktopConfig
     keys = \c -> myKeys c `M.union` azertyKeys c `M.union` keys desktopConfig c,
     mouseBindings  = \c -> myMouseBindings c `M.union` mouseBindings desktopConfig c,
     borderWidth = 3,
-    startupHook = setDefaultCursor xC_left_ptr >> setWMName "LG3D"
+    startupHook = setDefaultCursor xC_left_ptr >> setWMName "LG3D",
+    layoutHook = smartBorders $ layoutHook desktopConfig
   }
 
-main = xmonad =<< (myXmobar $ ewmh myConfig)
+main = xmonad =<< myXmobar (fullscreenSupport $ ewmh myConfig)
