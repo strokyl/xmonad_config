@@ -37,6 +37,10 @@ toggleVolume = spawn "amixer -D pulse set Master toggle"
 volumStep :: Int
 volumStep = 7 -- in percent
 
+dbusAudio action program = spawn $ "dbus-send --print-reply --dest=org.mpris.MediaPlayer2." ++ program ++ " /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player." ++ action
+
+audioProgram = ["vlc", "spotify"]
+
 myMouseBindings XConfig {XMonad.modMask = modm} = M.fromList
   [((modm, button2), const $ spawn "toggle_scroll")]
 
@@ -50,9 +54,13 @@ myKeys conf@XConfig {XMonad.modMask = modm}= M.fromList $
      ((modm .|. shiftMask, xK_Tab),      moveTo Prev HiddenWS),
      ((modm .|. shiftMask, xK_q),        confirmPrompt def "Exit XMonad" $ io exitSuccess),
      ((modm .|. mod1Mask, xK_space),     spawn "toggle_touchpad"),
+
      ((0, xF86XK_AudioLowerVolume),      setVolume $ -volumStep),
      ((0, xF86XK_AudioRaiseVolume),      setVolume volumStep),
      ((0, xF86XK_AudioMute),             toggleVolume),
+     ((0, xF86XK_AudioPlay),             foldl1 (>>) $ map (dbusAudio "PlayPause") audioProgram),
+     ((0, xF86XK_AudioNext),             foldl1 (>>) $ map (dbusAudio "Next") audioProgram),
+     ((0, xF86XK_AudioPrev),             foldl1 (>>) $ map (dbusAudio "Previous") audioProgram),
 
      ((0, xF86XK_MonBrightnessUp),       setLum lumStep),
      ((0, xF86XK_MonBrightnessDown),     setLum (-lumStep)),
