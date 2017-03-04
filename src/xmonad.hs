@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 
 import XMonad
 import XMonad.Config.Desktop
@@ -24,7 +25,7 @@ import XMonad.Layout.NoBorders
 
 
 setLum :: Show a => Num a => a -> X ()
-setLum perCent = spawn $ "xbacklight -inc " ++ (show perCent)
+setLum perCent = spawn $ "xbacklight -inc " ++ show perCent
 
 lumStep = 10 -- in percent
 
@@ -38,9 +39,9 @@ toggleVolume = spawn "amixer -D pulse set Master toggle"
 volumStep = 7 -- in percent
 
 myMouseBindings XConfig {XMonad.modMask = modm} = M.fromList $
-  [((modm, button2), (const $ spawn "toggle_scroll"))]
+  [((modm, button2), const $ spawn "toggle_scroll")]
 
-myKeys XConfig {XMonad.modMask = modm} = M.fromList $
+myKeys conf@XConfig {XMonad.modMask = modm}= M.fromList $
     [((modm, xK_r),                      spawn "rofi -show run"),
      ((modm, xK_w),                      spawn "rofi -show window"),
      ((modm .|. shiftMask, xK_e),        spawn "emacsclient -c"),
@@ -58,8 +59,16 @@ myKeys XConfig {XMonad.modMask = modm} = M.fromList $
      ((0, xF86XK_MonBrightnessDown),     setLum (-lumStep)),
 
      ((modm, xK_Tab),                    moveTo Next HiddenNonEmptyWS)]
+  ++
 
-    ++
+  -- mod-[1..9], Switch to workspace N
+  -- mod-shift-[1..9], Move client to workspace N
+  [((m .|. modm, key), windows $ f i)
+      | (i, key) <- zip (XMonad.workspaces conf) keyOnetoNightInAzerty
+      , (f, m) <- [(W.view, 0), (W.shift, shiftMask), (W.greedyView, mod1Mask)]]
+
+  ++
+
     -- mod-{a,z,e} %! Switch to physical/Xinerama screens 1, 2, or 3
     -- mod-shift-{a,z,e} %! Move client to screen 1, 2, or 3
     [((m .|. modm, key), screenWorkspace sc >>= flip whenJust (windows . f))
@@ -68,6 +77,8 @@ myKeys XConfig {XMonad.modMask = modm} = M.fromList $
 
 toggleStrutsKey :: XConfig t -> (KeyMask, KeySym)
 toggleStrutsKey XConfig{modMask = modm} = (modm, xK_b )
+
+keyOnetoNightInAzerty = [0x26,0xe9,0x22,0x27,0x28,0x2d,0xe8,0x5f,0xe7,0xe0]
 
 myPP = defaultPP
   {
