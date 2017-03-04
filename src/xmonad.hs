@@ -13,7 +13,6 @@ import XMonad.Util.WorkspaceCompare
 import XMonad.Actions.CycleWS
 import XMonad.Actions.UpdatePointer
 import XMonad.Hooks.EwmhDesktops (ewmh)
-import XMonad.Hooks.ICCCMFocus
 import XMonad.Hooks.SetWMName
 import XMonad.Util.Cursor
 import Graphics.X11.ExtraTypes.XF86
@@ -96,7 +95,7 @@ myXmobar conf = statusBar "xmobar" myPP toggleStrutsKey conf
 myConfig = desktopConfig
   {
     terminal    = "urxvtc",
-    logHook     = updatePointer (0.25, 0.25) (0, 0) >> takeTopFocus >> dynamicLogXinerama,
+    logHook     = updatePointer (0.25, 0.25) (0, 0) >> dynamicLogXinerama,
     modMask     = mod4Mask,
     keys = \c -> myKeys c `M.union` azertyKeys c `M.union` keys desktopConfig c,
     mouseBindings  = \c -> myMouseBindings c `M.union` mouseBindings desktopConfig c,
