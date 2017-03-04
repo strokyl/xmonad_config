@@ -29,6 +29,7 @@ executable strokyl-xmonad
                      , xmonad-contrib
                      , mtl
                      , process
+                     , data-default
   default-language:    Haskell2010
 
 test-suite strokyl-xmonad-test

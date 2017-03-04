@@ -18,26 +18,26 @@ import XMonad.Util.Cursor
 import Graphics.X11.ExtraTypes.XF86
 import XMonad.Prompt.ConfirmPrompt
 import System.Exit
-import XMonad.Prompt
 import XMonad.Layout.Fullscreen
 import XMonad.Layout.NoBorders
-
 
 setLum :: Show a => Num a => a -> X ()
 setLum perCent = spawn $ "xbacklight -inc " ++ show perCent
 
+lumStep :: Int
 lumStep = 10 -- in percent
 
 setVolume :: (Show a, Num a, Ord a) => a -> X ()
-setVolume perCent = spawn $ "amixer -D pulse sset Master " ++ (show $ abs perCent) ++ "%" ++ signe
+setVolume perCent = spawn $ "amixer -D pulse sset Master " ++ show (abs perCent) ++ "%" ++ signe
   where signe = if perCent >= 0 then "+" else "-"
 
 toggleVolume :: X ()
 toggleVolume = spawn "amixer -D pulse set Master toggle"
 
+volumStep :: Int
 volumStep = 7 -- in percent
 
-myMouseBindings XConfig {XMonad.modMask = modm} = M.fromList $
+myMouseBindings XConfig {XMonad.modMask = modm} = M.fromList
   [((modm, button2), const $ spawn "toggle_scroll")]
 
 myKeys conf@XConfig {XMonad.modMask = modm}= M.fromList $
@@ -48,7 +48,7 @@ myKeys conf@XConfig {XMonad.modMask = modm}= M.fromList $
      ((controlMask .|. mod1Mask, xK_l),  spawn "i3lock-wrapper"),
      ((modm, xK_g),                      moveTo Next EmptyWS),
      ((modm .|. shiftMask, xK_Tab),      moveTo Prev HiddenWS),
-     ((modm .|. shiftMask, xK_q),        confirmPrompt defaultXPConfig "Exit XMonad" $ io (exitWith ExitSuccess)),
+     ((modm .|. shiftMask, xK_q),        confirmPrompt def "Exit XMonad" $ io exitSuccess),
      ((modm .|. mod1Mask, xK_space),     spawn "toggle_touchpad"),
      ((0, xF86XK_AudioLowerVolume),      setVolume $ -volumStep),
      ((0, xF86XK_AudioRaiseVolume),      setVolume volumStep),
@@ -79,7 +79,7 @@ toggleStrutsKey XConfig{modMask = modm} = (modm, xK_b )
 
 keyOnetoNightInAzerty = [0x26,0xe9,0x22,0x27,0x28,0x2d,0xe8,0x5f,0xe7,0xe0]
 
-myPP = defaultPP
+myPP = def
   {
     ppCurrent = xmobarColor color "". ("*"++),
     ppVisible = xmobarColor color "",
@@ -90,7 +90,7 @@ myPP = defaultPP
 
 myXmobar :: LayoutClass l Window
        => XConfig l -> IO (XConfig (ModifiedLayout AvoidStruts l))
-myXmobar conf = statusBar "xmobar" myPP toggleStrutsKey conf
+myXmobar = statusBar "xmobar" myPP toggleStrutsKey
 
 myConfig = desktopConfig
   {
