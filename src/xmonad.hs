@@ -124,8 +124,8 @@ myConfig = desktopConfig
     manageHook =  (isFullscreen --> doFullFloat) <+>
                   manageHook desktopConfig,
 
-    startupHook = setDefaultCursor xC_left_ptr >> setWMName "LG3D" <+>
-                  startupHook desktopConfig,
+    startupHook = startupHook desktopConfig <+>
+                  setDefaultCursor xC_left_ptr >> setWMName "LG3D",
 
     handleEventHook = XMonad.Hooks.EwmhDesktops.fullscreenEventHook <+>
                       handleEventHook desktopConfig,
