@@ -52,6 +52,8 @@ myKeys conf@XConfig {XMonad.modMask = modm}= M.fromList $
      ((modm, xK_w),                      spawn "rofi -show window"),
      ((modm .|. shiftMask, xK_e),        spawn "emacsclient -c"),
      ((modm, xK_f),                      spawn "firefox"),
+     ((modm, xK_i),                      incSpacing (-1)),
+     ((modm, xK_o),                      incSpacing 1),
      ((controlMask .|. mod1Mask, xK_l),  spawn "i3lock-wrapper"),
      ((modm, xK_g),                      moveTo Next EmptyWS),
      ((modm .|. shiftMask, xK_Tab),      moveTo Prev HiddenWS),
