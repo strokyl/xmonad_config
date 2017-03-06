@@ -12,7 +12,7 @@ import XMonad.Hooks.ManageDocks
 import XMonad.Util.WorkspaceCompare
 import XMonad.Actions.CycleWS
 import XMonad.Actions.UpdatePointer
-import XMonad.Hooks.EwmhDesktops (ewmh)
+import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.SetWMName
 import XMonad.Util.Cursor
 import Graphics.X11.ExtraTypes.XF86
@@ -20,6 +20,8 @@ import XMonad.Prompt.ConfirmPrompt
 import System.Exit
 import XMonad.Layout.Fullscreen
 import XMonad.Layout.NoBorders
+import XMonad.Hooks.ManageHelpers
+import XMonad.Hooks.FadeInactive
 
 setLum :: Show a => Num a => a -> X ()
 setLum perCent = spawn $ "xbacklight -inc " ++ show perCent
@@ -103,13 +105,33 @@ myXmobar = statusBar "xmobar" myPP toggleStrutsKey
 myConfig = desktopConfig
   {
     terminal    = "urxvtc",
-    logHook     = updatePointer (0.25, 0.25) (0, 0) >> dynamicLogXinerama,
+
+    logHook     = updatePointer (0.25, 0.25) (0, 0) >> dynamicLogXinerama <+>
+                  fadeInactiveLogHook 0.7 <+>
+                  logHook desktopConfig,
+
     modMask     = mod4Mask,
-    keys = \c -> myKeys c `M.union` azertyKeys c `M.union` keys desktopConfig c,
-    mouseBindings  = \c -> myMouseBindings c `M.union` mouseBindings desktopConfig c,
+
+    keys = \c -> myKeys c `M.union`
+                 azertyKeys c `M.union`
+                 keys desktopConfig c,
+
+    mouseBindings  = \c -> myMouseBindings c `M.union`
+                           mouseBindings desktopConfig c,
+
     borderWidth = 3,
-    startupHook = setDefaultCursor xC_left_ptr >> setWMName "LG3D",
-    layoutHook = smartBorders $ layoutHook desktopConfig
+
+    manageHook =  (isFullscreen --> doFullFloat) <+>
+                  manageHook desktopConfig,
+
+    startupHook = setDefaultCursor xC_left_ptr >> setWMName "LG3D" <+>
+                  startupHook desktopConfig,
+
+    handleEventHook = XMonad.Hooks.EwmhDesktops.fullscreenEventHook <+>
+                      handleEventHook desktopConfig,
+
+    layoutHook = noBorders $
+                 layoutHook desktopConfig
   }
 
 main = xmonad =<< myXmobar (fullscreenSupport $ ewmh myConfig)
