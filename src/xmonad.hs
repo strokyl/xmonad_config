@@ -130,7 +130,8 @@ myConfig = desktopConfig
     handleEventHook = XMonad.Hooks.EwmhDesktops.fullscreenEventHook <+>
                       handleEventHook desktopConfig,
 
-    layoutHook = noBorders $
+    layoutHook = smartBorders $
+                 noBorders $
                  layoutHook desktopConfig
   }
 
