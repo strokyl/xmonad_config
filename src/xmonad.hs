@@ -22,6 +22,7 @@ import XMonad.Layout.Fullscreen
 import XMonad.Layout.NoBorders
 import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.FadeInactive
+import XMonad.Layout.Spacing
 
 setLum :: Show a => Num a => a -> X ()
 setLum perCent = spawn $ "xbacklight -inc " ++ show perCent
@@ -132,6 +133,7 @@ myConfig = desktopConfig
 
     layoutHook = smartBorders $
                  noBorders $
+                 smartSpacing 10 $
                  layoutHook desktopConfig
   }
 
