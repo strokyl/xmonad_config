@@ -78,6 +78,7 @@ myKeys conf@XConfig {XMonad.modMask = modm}= M.fromList $
 
      ((0, xF86XK_MonBrightnessUp),       setLum lumStep),
      ((0, xF86XK_MonBrightnessDown),     setLum (-lumStep)),
+     ((0, xF86XK_Sleep),                 spawn "systemctl suspend"),
 
      ((modm, xK_Tab),                    moveTo Next HiddenNonEmptyWS)]
   ++
