@@ -2,6 +2,9 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 
 import XMonad
+import XMonad.Layout.Minimize
+import XMonad.Layout.MultiToggle
+import XMonad.Layout.MultiToggle.Instances
 import XMonad.Config.Desktop
 import XMonad.Hooks.DynamicLog
 import XMonad.Config.Azerty
@@ -47,18 +50,24 @@ audioProgram = ["vlc", "spotify"]
 myMouseBindings XConfig {XMonad.modMask = modm} = M.fromList
   [((modm, button2), const $ spawn "toggle_scroll")]
 
+-- because of a bug with Toggle that make border appear when leaving back from
+-- fullscreen until an other window is triggered
+focusOutAndInCurrentWindow = windows W.focusDown >> windows W.focusUp
+
 myKeys conf@XConfig {XMonad.modMask = modm}= M.fromList $
     [((modm, xK_r),                      spawn "rofi -show run"),
      ((modm, xK_w),                      spawn "rofi -show window"),
      ((modm .|. shiftMask, xK_e),        spawn "emacsclient -c"),
-     ((modm, xK_f),                      spawn "firefox"),
-     ((modm, xK_i),                      incSpacing (-1)),
-     ((modm, xK_o),                      incSpacing 1),
+     ((modm, xK_f),                      (sendMessage $ Toggle FULL) >> focusOutAndInCurrentWindow),
+     ((modm, xK_i),                      incSpacing (-2)),
+     ((modm, xK_o),                      incSpacing 2),
      ((controlMask .|. mod1Mask, xK_l),  spawn "i3lock-wrapper"),
-     ((modm, xK_g),                      moveTo Next EmptyWS),
+     ((modm, xK_g),                      moveTo Next HiddenEmptyWS),
      ((modm .|. shiftMask, xK_Tab),      moveTo Prev HiddenWS),
      ((modm .|. shiftMask, xK_q),        confirmPrompt def "Exit XMonad" $ io exitSuccess),
      ((modm .|. mod1Mask, xK_space),     spawn "toggle_touchpad"),
+     ((modm, xK_n),                      withFocused minimizeWindow >> windows W.focusDown),
+     ((modm .|. shiftMask, xK_n),        sendMessage RestoreNextMinimizedWin),
 
      ((0, xF86XK_AudioLowerVolume),      setVolume $ -volumStep),
      ((0, xF86XK_AudioRaiseVolume),      setVolume volumStep),
@@ -105,6 +114,13 @@ myXmobar :: LayoutClass l Window
        => XConfig l -> IO (XConfig (ModifiedLayout AvoidStruts l))
 myXmobar = statusBar "xmobar" myPP toggleStrutsKey
 
+layout = minimize $ tiled ||| Mirror tiled
+  where
+     tiled   = Tall nmaster delta ratio
+     nmaster = 1
+     ratio   = 1/2
+     delta = 3/100
+
 myConfig = desktopConfig
   {
     terminal    = "urxvtc",
@@ -134,9 +150,10 @@ myConfig = desktopConfig
                       handleEventHook desktopConfig,
 
     layoutHook = smartBorders $
-                 noBorders $
-                 smartSpacing 10 $
-                 layoutHook desktopConfig
+                 smartSpacing 6 $
+                 mkToggle1 FULL $
+                 noBorders $ 
+                 layout
   }
 
 main = xmonad =<< myXmobar (fullscreenSupport $ ewmh myConfig)
