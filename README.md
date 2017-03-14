@@ -1,1 +1,1 @@
-TODO
+This is my XMONAD config
