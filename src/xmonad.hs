@@ -151,10 +151,9 @@ myConfig = desktopConfig
     handleEventHook = XMonad.Hooks.EwmhDesktops.fullscreenEventHook <+>
                       handleEventHook desktopConfig,
 
-    layoutHook = smartBorders $
+    layoutHook = noBorders $
                  smartSpacing 6 $
                  mkToggle1 FULL $
-                 noBorders $
                  layout
   }
 
