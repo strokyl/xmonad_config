@@ -92,11 +92,11 @@ myKeys conf@XConfig {XMonad.modMask = modm}= M.fromList $
 
   ++
 
-    -- mod-{a,z,e} %! Switch to physical/Xinerama screens 1, 2, or 3
-    -- mod-shift-{a,z,e} %! Move client to screen 1, 2, or 3
-    [((m .|. modm, key), f sc)
-        | (key, sc) <- zip [xK_a, xK_z, xK_e] [0..]
-        , (f, m) <- [(viewScreen, 0), (sendToScreen, shiftMask)]]
+  -- mod-{a,z,e} %! Switch to physical/Xinerama screens 1, 2, or 3
+  -- mod-shift-{a,z,e} %! Move client to screen 1, 2, or 3
+  [((m .|. modm, key), f sc)
+      | (key, sc) <- zip [xK_a, xK_z, xK_e] [0..]
+      , (f, m) <- [(viewScreen, 0), (sendToScreen, shiftMask)]]
 
 toggleStrutsKey :: XConfig t -> (KeyMask, KeySym)
 toggleStrutsKey XConfig{modMask = modm} = (modm, xK_b )
