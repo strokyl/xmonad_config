@@ -59,7 +59,7 @@ myKeys conf@XConfig {XMonad.modMask = modm}= M.fromList $
     [((modm, xK_r),                      spawn "rofi -show run"),
      ((modm, xK_w),                      spawn "rofi -show window"),
      ((modm .|. shiftMask, xK_e),        spawn "emacsclient -c"),
-     ((modm, xK_f),                      (sendMessage $ Toggle FULL) >> focusOutAndInCurrentWindow),
+     ((modm, xK_f),                      (sendMessage $ Toggle NBFULL) >> focusOutAndInCurrentWindow),
      ((modm, xK_i),                      incSpacing (-2)),
      ((modm, xK_o),                      incSpacing 2),
      ((controlMask .|. mod1Mask, xK_l),  spawn "i3lock-wrapper"),
@@ -153,7 +153,7 @@ myConfig = desktopConfig
 
     layoutHook = noBorders $
                  smartSpacing 6 $
-                 mkToggle1 FULL $
+                 mkToggle1 NBFULL $
                  layout
   }
 
