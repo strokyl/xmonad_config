@@ -29,6 +29,7 @@ import XMonad.Layout.Spacing
 import XMonad.Actions.PhysicalScreens
 import XMonad.Actions.CopyWindow
 import XMonad.Util.Run
+import XMonad.Actions.SpawnOn
 
 setLum :: Show a => Num a => a -> X ()
 setLum perCent = spawn $ "xbacklight -inc " ++ show perCent
@@ -58,7 +59,7 @@ myMouseBindings XConfig {XMonad.modMask = modm} = M.fromList
 focusOutAndInCurrentWindow = windows W.focusDown >> windows W.focusUp
 
 myKeys conf@XConfig {XMonad.modMask = modm}= M.fromList $
-    [((modm, xK_r),                      spawn "rofi -show run"),
+    [((modm, xK_r),                      spawnHere "rofi -show run"),
      ((modm, xK_w),                      spawn "rofi -show window"),
      ((modm .|. shiftMask, xK_e),        spawn "emacsclient -c"),
      ((modm, xK_f),                      (sendMessage $ Toggle NBFULL) >> focusOutAndInCurrentWindow),
