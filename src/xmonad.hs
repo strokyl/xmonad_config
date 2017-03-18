@@ -27,6 +27,8 @@ import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.FadeInactive
 import XMonad.Layout.Spacing
 import XMonad.Actions.PhysicalScreens
+import XMonad.Actions.CopyWindow
+import XMonad.Util.Run
 
 setLum :: Show a => Num a => a -> X ()
 setLum perCent = spawn $ "xbacklight -inc " ++ show perCent
@@ -81,6 +83,11 @@ myKeys conf@XConfig {XMonad.modMask = modm}= M.fromList $
      ((0, xF86XK_MonBrightnessDown),     setLum (-lumStep)),
      ((0, xF86XK_Sleep),                 spawn "systemctl suspend"),
 
+     ((modm, xK_c),                      kill1),
+     ((modm, xK_v),                      windows copyToAll),
+     ((modm .|. shiftMask, xK_v),        killAllOtherCopies),
+     ((modm, xK_b),                      sendMessage ToggleStruts),
+
      ((modm, xK_Tab),                    moveTo Next HiddenNonEmptyWS)]
   ++
 
@@ -88,7 +95,7 @@ myKeys conf@XConfig {XMonad.modMask = modm}= M.fromList $
   -- mod-shift-[1..9], Move client to workspace N
   [((m .|. modm, key), windows $ f i)
       | (i, key) <- zip (XMonad.workspaces conf) keyOnetoNightInAzerty
-      , (f, m) <- [(W.view, 0), (W.shift, shiftMask), (W.greedyView, mod1Mask)]]
+      , (f, m) <- [(W.view, 0), (W.shift, shiftMask), (W.greedyView, mod1Mask), (copy, controlMask)]]
 
   ++
 
@@ -103,18 +110,25 @@ toggleStrutsKey XConfig{modMask = modm} = (modm, xK_b )
 
 keyOnetoNightInAzerty = [0x26,0xe9,0x22,0x27,0x28,0x2d,0xe8,0x5f,0xe7,0xe0]
 
-myPP = def
-  {
-    ppCurrent = xmobarColor color "". ("*"++),
-    ppVisible = xmobarColor color "",
-    ppSort = getSortByXineramaPhysicalRule
+myPP xmobarPipe = do
+  wsThatHaveACopyOfTheFocusedWindow <- wsContainingCopies
+  dynamicLogWithPP $ def {
+    ppCurrent = xmobarColor visibleColor "". ("*"++),
+    ppVisible = xmobarColor visibleColor "",
+    ppHidden = \ws -> if ws `elem` wsThatHaveACopyOfTheFocusedWindow then
+                        xmobarColor hasCopyColor "" ws
+                      else
+                        ws,
+    ppSort = getSortByXineramaRule,
+    ppOutput = hPutStrLn xmobarPipe
   }
   where
-    color = "green"
+    visibleColor = "green"
+    hasCopyColor = "red"
 
-myXmobar :: LayoutClass l Window
-       => XConfig l -> IO (XConfig (ModifiedLayout AvoidStruts l))
-myXmobar = statusBar "xmobar" myPP toggleStrutsKey
+-- myXmobar :: LayoutClass l Window
+--       => XConfig l -> IO (XConfig (ModifiedLayout AvoidStruts l))
+-- myXmobar = statusBar "xmobar" myPP toggleStrutsKey
 
 layout = minimize $ tiled ||| Mirror tiled
   where
@@ -123,13 +137,14 @@ layout = minimize $ tiled ||| Mirror tiled
      ratio   = 1/2
      delta = 3/100
 
-myConfig = desktopConfig
+myConfig xmobarPipe = docks $ fullscreenSupport $ ewmh $ desktopConfig
   {
     terminal    = "urxvtc",
 
     logHook     = updatePointer (0.25, 0.25) (0, 0) >> dynamicLogXinerama <+>
                   fadeInactiveLogHook 0.7 <+>
-                  logHook desktopConfig,
+                  logHook desktopConfig <+>
+                  myPP xmobarPipe,
 
     modMask     = mod4Mask,
 
@@ -151,10 +166,16 @@ myConfig = desktopConfig
     handleEventHook = XMonad.Hooks.EwmhDesktops.fullscreenEventHook <+>
                       handleEventHook desktopConfig,
 
-    layoutHook = noBorders $
+    layoutHook = avoidStruts $
+                 noBorders $
+                 smartBorders $
                  smartSpacing 6 $
                  mkToggle1 NBFULL $
                  layout
   }
 
-main = xmonad =<< myXmobar (fullscreenSupport $ ewmh myConfig)
+--main = do
+--  xmobarPipe <- spawnPipe "xmobar"
+--  xmonad $ myConfig xmobarPipe
+
+main = spawnPipe "xmobar" >>= xmonad . myConfig
