@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 
 import XMonad
@@ -30,6 +31,7 @@ import XMonad.Actions.PhysicalScreens
 import XMonad.Actions.CopyWindow
 import XMonad.Util.Run
 import XMonad.Actions.SpawnOn
+import qualified XMonad.Util.ExtensibleState as XS
 
 setLum :: Show a => Num a => a -> X ()
 setLum perCent = spawn $ "xbacklight -inc " ++ show perCent
@@ -65,6 +67,7 @@ myKeys conf@XConfig {XMonad.modMask = modm}= M.fromList $
      ((modm, xK_f),                      (sendMessage $ Toggle NBFULL) >> focusOutAndInCurrentWindow),
      ((modm, xK_i),                      incSpacing (-2)),
      ((modm, xK_o),                      incSpacing 2),
+     ((modm, xK_u),                      goBackInHistory),
      ((controlMask .|. mod1Mask, xK_l),  spawn "i3lock-wrapper"),
      ((modm, xK_g),                      moveTo Next HiddenEmptyWS),
      ((modm .|. shiftMask, xK_Tab),      moveTo Prev HiddenWS),
@@ -138,11 +141,14 @@ layout = minimize $ tiled ||| Mirror tiled
      ratio   = 1/2
      delta = 3/100
 
+
 myConfig xmobarPipe = docks $ fullscreenSupport $ ewmh $ desktopConfig
   {
     terminal    = "urxvtc",
 
-    logHook     = updatePointer (0.25, 0.25) (0, 0) >> dynamicLogXinerama <+>
+    logHook     = updatePointer (0.25, 0.25) (0, 0) <+>
+                  recordStateHook <+>
+                  dynamicLogXinerama <+>
                   fadeInactiveLogHook 0.7 <+>
                   logHook desktopConfig <+>
                   myPP xmobarPipe,
@@ -175,8 +181,40 @@ myConfig xmobarPipe = docks $ fullscreenSupport $ ewmh $ desktopConfig
                  layout
   }
 
---main = do
---  xmobarPipe <- spawnPipe "xmobar"
---  xmonad $ myConfig xmobarPipe
-
 main = spawnPipe "xmobar" >>= xmonad . myConfig
+
+data StateHistory = StateHistory [WindowSet] deriving Typeable
+instance ExtensionClass StateHistory where
+  initialValue = StateHistory []
+
+recordNewState :: WindowSet -> StateHistory -> StateHistory
+recordNewState ws (StateHistory list) = StateHistory $ ws:list
+
+removeLastState :: StateHistory -> StateHistory
+removeLastState (StateHistory (h:t)) = StateHistory t
+
+getNumRecordedSate :: StateHistory -> Int
+getNumRecordedSate (StateHistory l) = length l
+
+getLastState :: StateHistory -> WindowSet
+getLastState (StateHistory (h:t)) = h
+
+showMessage :: String -> X ()
+showMessage message = spawn $ "notify-send " ++ message
+
+goBackInHistory :: X ()
+goBackInHistory = do
+  numOfState <- XS.gets getNumRecordedSate
+  if numOfState < 2 then
+    return ()
+  else
+    do
+      XS.modify removeLastState
+      ws <- XS.gets getLastState
+      windows $ const ws
+      XS.modify removeLastState
+
+recordStateHook :: X ()
+recordStateHook = do
+  ws <- gets windowset
+  XS.modify $ recordNewState ws
