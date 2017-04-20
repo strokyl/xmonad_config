@@ -120,7 +120,7 @@ myPP xmobarPipe = do
                         xmobarColor hasCopyColor "" ws
                       else
                         ws,
-    ppSort = getSortByXineramaRule,
+    ppSort = getSortByXineramaPhysicalRule,
     ppOutput = hPutStrLn xmobarPipe
   }
   where
